@@ -13,11 +13,12 @@ public class Node implements Serializable {
 	private ArrayList<String> attachedNodes = new ArrayList<String>();
 	private ArrayList<String> path = new ArrayList<String>();
 	private ArrayList<Task> taskQueue = new ArrayList<Task>();
-	private ArrayList<Integer> LEValues = new ArrayList<Integer>();
-	private ArrayList<String> LENames = new ArrayList<String>();
+	private ArrayList<Integer> UIDValues = new ArrayList<Integer>();
+	private ArrayList<String> UIDNames = new ArrayList<String>();
 	private String id = "";
 	private String targetNode;
 	private String leader;
+	private String consensusValue;
 	private Point coords;
 	private boolean selected = false;
 	private boolean active = false;
@@ -39,8 +40,8 @@ public class Node implements Serializable {
 		id = name;
 		coords = new Point(x,y);
 		setUID(generator.nextInt(10000));
-		LEValues.add(UID);
-		LENames.add(id);
+		UIDValues.add(UID);
+		UIDNames.add(id);
 	}
 	
 	
@@ -130,7 +131,7 @@ public class Node implements Serializable {
 	// Set a node as active.
 	public void setActive(boolean bool) {
 		if(active == true && bool == true) {
-			activeTime += generator.nextInt(addedTime) + staticTime;
+			//activeTime += generator.nextInt(addedTime) + staticTime;
 		}
 		else if(active == false && bool == true){
 			active = bool;
@@ -300,8 +301,8 @@ public class Node implements Serializable {
 		finalWorkStatus = status;
 	}
 	
-	public void setReported() {
-		reported = true;
+	public void setReported(boolean bool) {
+		reported = bool;
 	}
 	
 	public boolean hasNodeReported() {
@@ -328,27 +329,45 @@ public class Node implements Serializable {
 		return UID;
 	}
 	
-	public void addToLEValues(int val) {
-		LEValues.add(val);
+	public void addToUIDValues(int val) {
+		UIDValues.add(val);
 	}
 	
-	public void addToLENames(String name) {
-		LENames.add(name);
+	public void addToUIDNames(String name) {
+		UIDNames.add(name);
 	}
 	
 	public boolean findLeader(int nodeAmount) {
-		if(LEValues.size() >= nodeAmount) {
-			int max = LEValues.get(0);
+		if(UIDValues.size() >= nodeAmount) {
+			int max = UIDValues.get(0);
 			int index = 0;
 		
-			for(int i = 1; i < LEValues.size(); i++) {
-				if(LEValues.get(i) > max) {
-					max = LEValues.get(i);
+			for(int i = 1; i < UIDValues.size(); i++) {
+				if(UIDValues.get(i) > max) {
+					max = UIDValues.get(i);
 					index = i;
 				}
 			}
 		
-			setLeader(LENames.get(index));
+			setLeader(UIDNames.get(index));
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	public boolean findConsensusValue(int nodeAmount) {
+		if(UIDValues.size() >= nodeAmount) {
+			double sum = 0;
+		
+			for(int i = 0; i < UIDValues.size(); i++) {
+				sum += UIDValues.get(i);
+			}
+			
+			double temp = sum / UIDValues.size();
+		
+			setConsensusValue(temp);
 			return true;
 		}
 		else {
@@ -363,8 +382,18 @@ public class Node implements Serializable {
 	public void setLeader(String leader) {
 		this.leader = leader;
 	}
+	
+	public String getConsensusValue() {
+		return consensusValue;
+	}
 
-
+	public void setConsensusValue(double consensusValue) {
+		String temp = "";
+		temp += consensusValue;
+		this.consensusValue = temp;
+	}
+	
+	
 	public void setReportedCount(int reportedCount) {
 		this.reportedCount = reportedCount;
 	}
@@ -372,5 +401,22 @@ public class Node implements Serializable {
 
 	public int getReportedCount() {
 		return reportedCount;
+	}
+	
+	public void resetNodeData() {
+		UIDValues = new ArrayList<Integer>();
+		UIDNames = new ArrayList<String>();
+		UIDValues.add(UID);
+		UIDNames.add(id);
+		finalWorkStatus = false;
+		reportedCount = 0;
+		leader = "";
+		received = 0;
+		reported = false;
+		finalWork = 0;
+		active = false;
+		for(int i = 0; i < taskQueue.size(); i++) {
+			taskQueue.remove(0);
+		}
 	}
 }

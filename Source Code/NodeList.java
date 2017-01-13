@@ -16,6 +16,7 @@ public class NodeList implements Serializable {
 	private Random generator = new Random(System.currentTimeMillis());
 	ArrayList<NodePairs> nodePairs = new ArrayList<NodePairs>();
 	ArrayList<Task> tasks = new ArrayList<Task>();
+	private String algorithmType = "";
 	
 	//Instance method for singleton purposes.
 	public static NodeList instance() {
@@ -72,12 +73,12 @@ public class NodeList implements Serializable {
 		return null;
 	}
 	
-	public void setAllSpecs(int addedTime, int staticTime, int sendChance) {
+	public void setAllSpecs(int addedTime, int staticTime, int sendChance, String algorithmType) {
 		for(int i = 0; i < nodes.size(); i++) {
 			nodes.get(i).setSpecs(addedTime, staticTime, sendChance);
 		}
 		
-		//nodes.get(0).setSpecs(10, 10, 100);
+		this.algorithmType = algorithmType;
 	}
 	
 	public void setConnectedNodes(LinkList links) {
@@ -156,33 +157,25 @@ public class NodeList implements Serializable {
 		
 	}
 	
-	public int addCommands() {
-		for(int i = 0; i < nodes.size(); i++) {
-			int rand = generator.nextInt(nodes.size()-1) + 1;
-			if(rand != i)
-				nodePairs.add(new NodePairs(getNode(i), getNode(rand)));
-		}
+	public int addCommands(String algorithmType) {
 		
-		setActiveNodes();
-		return nodePairs.size();
-	}
-	
-	public int addCommandsLE() {
-		for(int i = 1; i < nodes.size(); i++) {
-			for(int j = 1; j < nodes.size(); j++) {
-				if(i != j) {
-					nodePairs.add(new NodePairs(getNode(i), getNode(j)));
+		if(algorithmType.equals("Leader Election")) {
+			for(int i = 1; i < nodes.size(); i++) {
+				for(int j = 1; j < nodes.size(); j++) {
+					if(i != j) {
+						nodePairs.add(new NodePairs(getNode(i), getNode(j)));
+					}
 				}
 			}
 		}
-		
-		setActiveNodes();
-		return nodePairs.size();
-	}
-	
-	public int addCommandsBFS() {
-		for(int i = 1; i < nodes.size(); i++) {
-			nodePairs.add(new NodePairs(getNode(0), getNode(i)));
+		else if(algorithmType.equals("Consensus")) {
+			for(int i = 1; i < nodes.size(); i++) {
+				for(int j = 1; j < nodes.size(); j++) {
+					if(i != j) {
+						nodePairs.add(new NodePairs(getNode(i), getNode(j)));
+					}
+				}
+			}
 		}
 		
 		setActiveNodes();
@@ -221,7 +214,7 @@ public class NodeList implements Serializable {
         	}
         	
         	int UID = nodePairs.get(i).getSendNode().getUID();
-        	Task t = new Task(s.getPath(), false, nodePairs.get(i).getSendNode().getID(), UID);
+        	Task t = new Task(s.getPath(), false, nodePairs.get(i).getSendNode().getID(), UID, "");
         	//nodePairs.get(i).getSendNode().setPath(s.getPath());
         	nodePairs.get(i).getSendNode().addTask(t);
         	nodePairs.get(i).getSendNode().setPath(nodePairs.get(i).getSendNode().getCurrentTask().getPath());
@@ -238,23 +231,37 @@ public class NodeList implements Serializable {
 		
 		if(t.getStartNode().equals(t.getTargetNode()) && t.getFinalWork() == false) {
 			getNodeByName(t.getStartNode()).setReceived(getNodeByName(t.getStartNode()).getReceived() + 1);
-			getNodeByName(t.getStartNode()).addToLENames(t.getOriginalStartNode());
-			getNodeByName(t.getStartNode()).addToLEValues(t.getMessage());
-			if(getNodeByName(t.getStartNode()).findLeader(nodes.size() - 1) == true) {
-				t.setFinalWork(true);
-				getNodeByName(t.getStartNode()).setFinalWork(true);
-				t.setTargetNode(nodes.get(0).getID());
-				t.setOriginalStartNode(t.getStartNode());
-				System.out.println(getNodeByName(t.getStartNode()).getID() + " believes that " + getNodeByName(t.getStartNode()).getLeader() + " is the leader.");
+			getNodeByName(t.getStartNode()).addToUIDNames(t.getOriginalStartNode());
+			getNodeByName(t.getStartNode()).addToUIDValues(t.getUID());
+			if(algorithmType.equals("Leader Election")) {
+				if(getNodeByName(t.getStartNode()).findLeader(nodes.size() - 1) == true) {
+					t.setFinalWork(true);
+					getNodeByName(t.getStartNode()).setFinalWork(true);
+					t.setTargetNode(nodes.get(0).getID());
+					t.setOriginalStartNode(t.getStartNode());
+					System.out.println(getNodeByName(t.getStartNode()).getID() + " believes that " + getNodeByName(t.getStartNode()).getLeader() + " is the leader.");
+				}
+				else {
+					return null;
+				}
 			}
-			else {
-				return null;
+			else if(algorithmType.equals("Consensus")) {
+				if(getNodeByName(t.getStartNode()).findConsensusValue(nodes.size() - 1) == true) {
+					t.setFinalWork(true);
+					getNodeByName(t.getStartNode()).setFinalWork(true);
+					t.setTargetNode(nodes.get(0).getID());
+					t.setOriginalStartNode(t.getStartNode());
+					System.out.println(getNodeByName(t.getStartNode()).getID() + " believes that " + getNodeByName(t.getStartNode()).getConsensusValue() + " is the value.");
+				}
+				else {
+					return null;
+				}
 			}
 			
 			
 		}
 		else if(t.getStartNode().equals(t.getTargetNode()) && t.getFinalWork() == true) {
-			getNodeByName(t.getOriginalStartNode()).setReported();
+			getNodeByName(t.getOriginalStartNode()).setReported(true);
 			//nodes.get(0).addToFinalWork();
 			//nodes.get(0).addToReported();
 			return null;
@@ -286,7 +293,7 @@ public class NodeList implements Serializable {
     	
   	
     	//int UID = nodePairs.get(nodePairs.size()-1).getSendNode().getUID();
-    	t = new Task(s.getPath(), t.getFinalWork(), t.getOriginalStartNode(), t.getMessage());
+    	t = new Task(s.getPath(), t.getFinalWork(), t.getOriginalStartNode(), t.getUID(), t.getMessage());
     	if(!t.getStartNode().equals(t.getTargetNode()))
     		nodePairs.get(nodePairs.size()-1).getSendNode().addTask(t);
     	
@@ -318,5 +325,13 @@ public class NodeList implements Serializable {
 			}
 		}
 		return reportedCount;
+	}
+	
+	public void resetNodeData() {
+		for(int i = 0; i < nodes.size(); i++) {
+			nodes.get(i).resetNodeData();
+		}
+		nodePairs = new ArrayList<NodePairs>();
+		tasks = new ArrayList<Task>();
 	}
 }

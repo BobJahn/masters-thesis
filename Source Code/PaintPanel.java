@@ -20,6 +20,7 @@ public class PaintPanel extends Component {
 	private int timerStart = 0;
 	private int timerEnd = 0;
 	private int timeElapsed = 0;
+	private String algorithmType = "";
 	public static final int DIAMETER = 80;
 	
 	
@@ -29,9 +30,10 @@ public class PaintPanel extends Component {
 	}
 	
 	// Advance constructor. Instantiates the class with the current nodes and links.
-	public PaintPanel(NodeList nodes, LinkList links) {
+	public PaintPanel(NodeList nodes, LinkList links, String algorithmType) {
 		this.nodes = nodes;
 		this.links = links;
+		this.algorithmType = algorithmType;
 	}
 	
 	
@@ -52,6 +54,9 @@ public class PaintPanel extends Component {
 	    g.setColor(Color.yellow);
 	    g.drawString("Clock \n", 1000, 30);
 	    g.drawLine(980, 35, 1100, 35);
+	    g.drawString("Computation being executed \n", 1000, 150);
+	    g.drawLine(980, 155, 1400, 155);
+	    g.drawString(algorithmType, 1050, 180);
 	    String time = Integer.toString(timeElapsed);
 	    
 	    if(time.length() > 3) {
@@ -71,14 +76,24 @@ public class PaintPanel extends Component {
 	    // Keep a textual list of nodes and highlight them as they complete their final work.
 	    g.setFont(new Font("Times New Roman", Font.BOLD, 20));
 	    g.setColor(Color.white);
-	    g.drawString("Nodes and Chosen Leader \n", 920, 400);
+	    if(algorithmType.equals("Leader Election")) {
+	    	g.drawString("Nodes and Chosen Leader \n", 920, 400);
+	    }
+	    else if(algorithmType.equals("Consensus")) {
+	    	g.drawString("Nodes and Chosen Value  \n", 920, 400);
+	    }
 	    g.drawLine(920, 405, 1150, 405);
 	    for(int i = 0; i < nodes.getSize(); i++) {
 	    	if(nodes.getNode(i).finalWorkComplete() == true) {
 	    		g.setColor(Color.green);
 	    		g.drawString(nodes.getNode(i).getID(), 920, 402 + 20*(i+1));
 	    		g.drawString(" ---> ", 920 + 75, 402 + 20*(i+1));
-	    		g.drawString(nodes.getNode(i).getLeader(), 920 + 120, 402 + 20*(i+1));
+	    		if(algorithmType.equals("Leader Election")) {
+	    			g.drawString(nodes.getNode(i).getLeader(), 920 + 120, 402 + 20*(i+1));
+	    		}
+	    		else if(algorithmType.equals("Consensus")) {
+	    			g.drawString(nodes.getNode(i).getConsensusValue(), 920 + 120, 402 + 20*(i+1));
+	    		}
 	    	}
 	    	else {
 	    		g.setColor(Color.white);
@@ -237,9 +252,12 @@ public class PaintPanel extends Component {
 	public void runSim() {
 		
 		// Prepare to run simulation
+		nodes.resetNodeData();
 		started = true;
-		nodes.setAllSpecs(1000, 1000, 100);
-		originalCommands = nodes.addCommandsLE();
+		nodes.setAllSpecs(300, 300, 100, algorithmType);
+		
+		originalCommands = nodes.addCommands(algorithmType);
+	
 		nodes.setConnectedNodes(links);
 		nodes.showNodeConnections();
 		nodes.setTargets();

@@ -27,7 +27,7 @@ public class Link implements Serializable{
 		nodes.add(n2);
 	}
 	
-	// Constructor. Also takes in a delay and sets it accordinly.
+	// Constructor. Also takes in a delay and sets it accordingly.
 	Link(String name, String n1, String n2, int ms) {
 		id = name;
 		nodes.add(n1);

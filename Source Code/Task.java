@@ -8,15 +8,16 @@ public class Task {
 	private String startNode;
 	private String originalStartNode;
 	private String targetNode;
-	private int message = 0;
+	private String message = "";
 	private boolean finalWork;
 	private int index = 0;
 	private int id = 0;
+	private int UID = 0;
 	private IDNumber ID = IDNumber.instance();
 
 
 
-	public Task(ArrayList<String> path, boolean finalWork, String originalStartNode, int message) {
+	public Task(ArrayList<String> path, boolean finalWork, String originalStartNode, int UID, String message) {
 		this.setPath(path);
 		if(path.size() > 0) {
 			setStartNode(path.get(0));
@@ -26,6 +27,7 @@ public class Task {
 		this.originalStartNode = originalStartNode;
 		this.setFinalWork(finalWork);
 		id = ID.generateTaskID();
+		this.UID = UID;
 		this.message = message;
 	}
 
@@ -99,13 +101,18 @@ public class Task {
 	}
 
 
-	public void setMessage(int message) {
+	public void setMessage(String message) {
 		this.message = message;
 	}
 
 
-	public int getMessage() {
+	public String getMessage() {
 		return message;
+	}
+
+
+	public int getUID() {
+		return UID;
 	}
 }
 

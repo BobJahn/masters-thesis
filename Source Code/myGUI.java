@@ -62,6 +62,7 @@ public class myGUI extends JFrame implements ActionListener, WindowListener {
 	private static JPanel panel15 = new JPanel();
 	private static JPanel panel16 = new JPanel();
 	private static JPanel panel17 = new JPanel();
+	private static JPanel panel18 = new JPanel();
 	
 	private static JButton addNode;
 	private static JButton addLink;
@@ -72,6 +73,8 @@ public class myGUI extends JFrame implements ActionListener, WindowListener {
 	private static JButton cancelSave;
 	private static JButton cancelLoad;
 	private static JButton changeMS;
+	private static JButton consensus;
+	private static JButton leaderElection;
 	
 	
 	private static JLabel nodeName; 
@@ -112,6 +115,8 @@ public class myGUI extends JFrame implements ActionListener, WindowListener {
 	private Link l1;
 	private int index = -1;
 	private int index2 = -1;
+	private String algorithmType = "Leader Election";
+	
 
 
 	
@@ -169,6 +174,8 @@ public class myGUI extends JFrame implements ActionListener, WindowListener {
 		cancelSave = new JButton("Cancel Operation");
 		cancelLoad = new JButton("Cancel Operation");
 		changeMS = new JButton("Change MS");
+		consensus = new JButton("Consensus");
+		leaderElection = new JButton("Leader Election");
 		
 		
 		panel1.setLayout(new BoxLayout(panel1, BoxLayout.PAGE_AXIS));
@@ -219,6 +226,10 @@ public class myGUI extends JFrame implements ActionListener, WindowListener {
 		panel16.setBackground(Color.black);
 		
 		panel17.setLayout(new FlowLayout());
+		
+		panel18.add(consensus);
+		panel18.add(leaderElection);
+		panel18.setBackground(Color.black);
 		
 		textXCoord.setText(val1);
 		textYCoord.setText(val2);
@@ -296,6 +307,23 @@ public class myGUI extends JFrame implements ActionListener, WindowListener {
 		}
 	}
 	
+	public class makeConsensus implements ActionListener{
+		public void actionPerformed(ActionEvent e) {
+			
+			algorithmType = "Consensus";
+			rethrowGraphics();
+			f.addMouseListener(m1 = new ClickListener());
+		}
+	}
+	
+	public class makeLeaderElection implements ActionListener{
+		public void actionPerformed(ActionEvent e) {
+			
+			algorithmType = "Leader Election";
+			rethrowGraphics();
+			f.addMouseListener(m1 = new ClickListener());
+		}
+	}
 	
 	public class menuListNodes implements ActionListener{
 		public void actionPerformed(ActionEvent e){
@@ -392,24 +420,16 @@ public class myGUI extends JFrame implements ActionListener, WindowListener {
 	
 	public class menuViewGraph implements ActionListener{
 		public void actionPerformed(ActionEvent e){
-			clearPanels();
-			f.getContentPane().setBackground(Color.black);
-			p1 = new PaintPanel(con1.getNodeObjects(), con1.getLinkObjects());
+			rethrowGraphics();
 			f.addMouseListener(m1 = new ClickListener());
-			f.add(p1);
-			f.setVisible(true);
 		}
 	}
 	
 	
 	public class menuRunSim implements ActionListener{
 		public void actionPerformed(ActionEvent e){
-			clearPanels();
-			f.getContentPane().setBackground(Color.black);
-			p1 = new PaintPanel(con1.getNodeObjects(), con1.getLinkObjects());
-			f.add(p1);
+			rethrowGraphics();
 			new sim().execute();
-			f.setVisible(true);
 		}
 	}
 	
@@ -437,8 +457,9 @@ public class myGUI extends JFrame implements ActionListener, WindowListener {
 				
 				con1.addNode("", x, y);
 				f.getContentPane().setBackground(Color.black);
-				p1 = new PaintPanel(con1.getNodeObjects(), con1.getLinkObjects());
+				p1 = new PaintPanel(con1.getNodeObjects(), con1.getLinkObjects(), algorithmType);
 				f.add(p1);
+				f.add(panel18, BorderLayout.SOUTH);
 				f.setVisible(true);
 			}
 			else if(event.getButton() == MouseEvent.BUTTON3) {
@@ -459,7 +480,7 @@ public class myGUI extends JFrame implements ActionListener, WindowListener {
 						System.out.println(l1.getID());
 						con1.setSelectedLink(l1, true);
 						f.getContentPane().setBackground(Color.black);
-						p1 = new PaintPanel(con1.getNodeObjects(), con1.getLinkObjects());
+						p1 = new PaintPanel(con1.getNodeObjects(), con1.getLinkObjects(), algorithmType);
 						f.add(panel16, BorderLayout.NORTH);
 						f.setVisible(true);
 					}
@@ -473,8 +494,9 @@ public class myGUI extends JFrame implements ActionListener, WindowListener {
 				
 				
 				f.getContentPane().setBackground(Color.black);
-				p1 = new PaintPanel(con1.getNodeObjects(), con1.getLinkObjects());
+				p1 = new PaintPanel(con1.getNodeObjects(), con1.getLinkObjects(), algorithmType);
 				f.add(p1);
+				f.add(panel18, BorderLayout.SOUTH);
 				f.setVisible(true);
 			}
 		}
@@ -500,8 +522,9 @@ public class myGUI extends JFrame implements ActionListener, WindowListener {
 					con1.addLink("", n1.getID(), n2.getID());
 				}
 				f.getContentPane().setBackground(Color.black);
-				p1 = new PaintPanel(con1.getNodeObjects(), con1.getLinkObjects());
+				p1 = new PaintPanel(con1.getNodeObjects(), con1.getLinkObjects(), algorithmType);
 				f.add(p1);
+				f.add(panel18, BorderLayout.SOUTH);
 				f.setVisible(true);
 			}
 			
@@ -523,7 +546,7 @@ public class myGUI extends JFrame implements ActionListener, WindowListener {
 			con1.setSelectedLink(l1, false);
 			
 			f.getContentPane().setBackground(Color.black);
-			p1 = new PaintPanel(con1.getNodeObjects(), con1.getLinkObjects());
+			p1 = new PaintPanel(con1.getNodeObjects(), con1.getLinkObjects(), algorithmType);
 			f.addMouseListener(m1 = new ClickListener());
 			f.add(p1);
 			f.setVisible(true);
@@ -644,6 +667,8 @@ public class myGUI extends JFrame implements ActionListener, WindowListener {
 		loadData.addActionListener(new load());
 		cancelLoad.addActionListener(new loadQuit());
 		changeMS.addActionListener(new changeMS());
+		consensus.addActionListener(new makeConsensus());
+		leaderElection.addActionListener(new makeLeaderElection());
 		
 		f.addWindowListener(new closeWindow());		
 	}
@@ -686,7 +711,7 @@ public class myGUI extends JFrame implements ActionListener, WindowListener {
 		panel6.remove(idReport);
 		panel7.remove(idReport);
 		f.remove(panel5);
-		//f.remove(panel17);
+		f.remove(panel18);
 		f.remove(p1);
 		f.getContentPane().setBackground(defaultColor);
 		f.repaint();
@@ -703,6 +728,14 @@ public class myGUI extends JFrame implements ActionListener, WindowListener {
 		textYCoord.setText(val2);
 	}
 	
+	public void rethrowGraphics() {
+		clearPanels();
+		f.getContentPane().setBackground(Color.black);
+		p1 = new PaintPanel(con1.getNodeObjects(), con1.getLinkObjects(), algorithmType);
+		f.add(p1);
+		f.add(panel18, BorderLayout.SOUTH);
+		f.setVisible(true);
+	}
 	
 	//main
 	public static void main(String args[]) {
