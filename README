@@ -1,0 +1,3 @@
+Master's Thesis circa 2012. The thesis topic involves the general termination detection of a distributed system running an algorithm of some kind. The Defense folder contains the raw pdf of the thesis as well as the powerpoint presentation which was used in the defense. The Source folder contains the associated java project. This project displays the approach discussed in the thesis itself.
+
+-Robert Jahn
